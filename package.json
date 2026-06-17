@@ -1,7 +1,7 @@
 {
     "$schema": "https://www.schemastore.org/package.json",
     "name": "typedoc-plugin-docusaurus-doc-links",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "private": false,
     "description": "TypeDoc plugin that prefixes bare generated Markdown doc links so Docusaurus resolves them as local doc files.",
     "keywords": [
