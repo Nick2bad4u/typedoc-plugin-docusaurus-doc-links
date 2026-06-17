@@ -1,4 +1,4 @@
-$schema: "https://json.schemastore.org/stale.json"
+$schema: "https://www.schemastore.org/stale.json"
 closeComment: "This issue has been automatically closed due to inactivity. If you believe this issue is still relevant, please reopen it with updated information."
 daysUntilClose: 7
 daysUntilStale: 60
