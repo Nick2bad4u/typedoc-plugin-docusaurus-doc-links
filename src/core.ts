@@ -1,10 +1,11 @@
-// @ts-check
+import { arrayJoin, stringSplit } from "ts-extras";
 
 const SCHEME_RE = /^[A-Za-z][+\-.A-Za-z]*:/v;
 
-/**
- * @typedef {{ marker: "`" | "~"; length: number }} FenceState
- */
+interface FenceState {
+    length: number;
+    marker: "`" | "~";
+}
 
 /**
  * Prefixes bare intra-doc Markdown file links with `./`.
@@ -12,29 +13,21 @@ const SCHEME_RE = /^[A-Za-z][+\-.A-Za-z]*:/v;
  * The function is designed for TypeDoc markdown renderer output. It avoids
  * fenced code blocks and inline code spans.
  *
- * @param {string} input
- *
- * @returns {string}
+ * @param input - Markdown source to normalize for Docusaurus doc-file link
+ *   resolution.
  */
-export function prefixBareMarkdownFileLinksInMarkdown(input) {
+export function prefixBareMarkdownFileLinksInMarkdown(input: string): string {
     const newline = input.includes("\r\n") ? "\r\n" : "\n";
-    const lines = input.split(/\r?\n/v);
+    const lines = stringSplit(input.replaceAll("\r\n", "\n"), "\n");
 
-    /** @type {null | FenceState} */
-    let fenceState = null;
+    let fenceState: FenceState | null = null;
 
     const outLines = lines.map((line) => {
         const fenceMatch = /^\s*(?<marker>[`~])\k<marker>{2,}/v.exec(line);
         if (fenceMatch) {
             const [matchText] = fenceMatch;
             const run = matchText.trimStart();
-            const { groups } = fenceMatch;
-            const typedGroups =
-                /** @type {undefined | { marker: string | undefined }} */ (
-                    groups
-                );
-            const markerChar = typedGroups?.marker ?? run.charAt(0);
-            /** @type {"`" | "~"} */
+            const markerChar = fenceMatch.groups?.marker ?? run.charAt(0);
             const marker = markerChar === "`" ? "`" : "~";
             const { length } = run;
 
@@ -57,16 +50,10 @@ export function prefixBareMarkdownFileLinksInMarkdown(input) {
         return prefixInlineMarkdownLinksInLine(line);
     });
 
-    return outLines.join(newline);
+    return arrayJoin(outLines, newline);
 }
 
-/**
- * @param {string} input
- * @param {number} startIndex
- *
- * @returns {number}
- */
-function findInlineLinkClosingParen(input, startIndex) {
+function findInlineLinkClosingParen(input: string, startIndex: number): number {
     let depth = 0;
     let index = startIndex;
 
@@ -100,13 +87,10 @@ function findInlineLinkClosingParen(input, startIndex) {
     return -1;
 }
 
-/**
- * @param {string} line
- * @param {number} closeBracketIndex
- *
- * @returns {number}
- */
-function findInlineLinkLabelOpenBracket(line, closeBracketIndex) {
+function findInlineLinkLabelOpenBracket(
+    line: string,
+    closeBracketIndex: number
+): number {
     let depth = 0;
 
     for (let index = closeBracketIndex - 1; index >= 0; index -= 1) {
@@ -130,13 +114,7 @@ function findInlineLinkLabelOpenBracket(line, closeBracketIndex) {
     return -1;
 }
 
-/**
- * @param {string} input
- * @param {number} index
- *
- * @returns {boolean}
- */
-function isEscaped(input, index) {
+function isEscaped(input: string, index: number): boolean {
     let backslashCount = 0;
     let currentIndex = index - 1;
 
@@ -148,12 +126,7 @@ function isEscaped(input, index) {
     return backslashCount % 2 === 1;
 }
 
-/**
- * @param {string} destination
- *
- * @returns {string}
- */
-function prefixIfBareRelativeMarkdownFile(destination) {
+function prefixIfBareRelativeMarkdownFile(destination: string): string {
     const trimmedStart = destination.trimStart();
     const leadingWhitespace = destination.slice(
         0,
@@ -192,12 +165,7 @@ function prefixIfBareRelativeMarkdownFile(destination) {
     return `${leadingWhitespace}./${trimmed}${trailingWhitespace}`;
 }
 
-/**
- * @param {string} payload
- *
- * @returns {string}
- */
-function prefixInlineLinkPayload(payload) {
+function prefixInlineLinkPayload(payload: string): string {
     const trimmedStart = payload.trimStart();
     const leadingWhitespace = payload.slice(
         0,
@@ -231,25 +199,12 @@ function prefixInlineLinkPayload(payload) {
     return `${leadingWhitespace}${rewrittenDestination}${remainder}${trailingWhitespace}`;
 }
 
-/**
- * @param {string} line
- *
- * @returns {string}
- */
-function prefixInlineMarkdownLinksInLine(line) {
+function prefixInlineMarkdownLinksInLine(line: string): string {
     let out = "";
     let index = 0;
+    let codeSpanLength: null | number = null;
 
-    /** @type {null | number} */
-    let codeSpanLength = null;
-
-    /**
-     * @param {number} startIndex
-     * @param {string} character
-     *
-     * @returns {number}
-     */
-    const countRun = (startIndex, character) => {
+    const countRun = (startIndex: number, character: string): number => {
         let count = 0;
         while (
             startIndex + count < line.length &&
@@ -306,12 +261,10 @@ function prefixInlineMarkdownLinksInLine(line) {
     return out;
 }
 
-/**
- * @param {string} payload
- *
- * @returns {{ destination: string; remainder: string }}
- */
-function splitInlineLinkDestination(payload) {
+function splitInlineLinkDestination(payload: string): {
+    destination: string;
+    remainder: string;
+} {
     const core = payload.trim();
     if (core.length === 0) {
         return { destination: "", remainder: "" };

@@ -10,7 +10,7 @@ import {
 import * as nodePath from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { prefixBareMarkdownFileLinksInMarkdown } from "../docusaurus-doc-links-core.mjs";
+import { prefixBareMarkdownFileLinksInMarkdown } from "../src/core.js";
 
 const packageName = "typedoc-plugin-docusaurus-doc-links";
 const fixtureDirectory = nodePath.join(".cache", "typedoc-fixture");

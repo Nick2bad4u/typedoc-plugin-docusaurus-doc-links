@@ -1,8 +1,6 @@
 {
     "$schema": "https://www.schemastore.org/tsconfig.json",
     "compilerOptions": {
-        "allowJs": true,
-        "checkJs": true,
         "declaration": false,
         "esModuleInterop": true,
         "exactOptionalPropertyTypes": true,
@@ -23,12 +21,11 @@
     "exclude": [
         ".cache/**",
         "coverage/**",
+        "dist/**",
         "node_modules/**"
     ],
     "include": [
-        "*.d.mts",
-        "docusaurus-doc-links.mjs",
-        "docusaurus-doc-links-core.mjs",
+        "src/**/*.ts",
         "test/**/*.ts",
         "vite.config.ts"
     ]

@@ -33,44 +33,46 @@
     "type": "module",
     "exports": {
         ".": {
-            "types": "./docusaurus-doc-links.d.mts",
-            "import": "./docusaurus-doc-links.mjs"
+            "types": "./dist/plugin.d.ts",
+            "import": "./dist/plugin.js"
         },
         "./core": {
-            "types": "./docusaurus-doc-links-core.d.mts",
-            "import": "./docusaurus-doc-links-core.mjs"
+            "types": "./dist/core.d.ts",
+            "import": "./dist/core.js"
         },
         "./package.json": "./package.json"
     },
-    "main": "./docusaurus-doc-links.mjs",
-    "types": "./docusaurus-doc-links.d.mts",
+    "main": "./dist/plugin.js",
+    "types": "./dist/plugin.d.ts",
     "files": [
-        "docusaurus-doc-links.d.mts",
-        "docusaurus-doc-links.mjs",
-        "docusaurus-doc-links-core.d.mts",
-        "docusaurus-doc-links-core.mjs",
+        "dist",
         "CHANGELOG.md"
     ],
     "scripts": {
-        "build": "npm run typecheck",
+        "build": "npm run clean:dist && tsc -p tsconfig.build.json",
         "build:runtime": "npm run build",
         "changelog:generate": "git-cliff --config cliff.toml --output CHANGELOG.md",
         "changelog:preview": "git-cliff --config cliff.toml --unreleased",
         "changelog:release-notes": "git-cliff --config cliff.toml --current --strip all",
-        "coverage": "vitest run --coverage",
+        "clean:dist": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+        "coverage": "npm run build && vitest run --coverage",
         "lint": "eslint . --cache --cache-strategy content --cache-location .cache/.eslintcache",
         "lint:package": "sort-package-json --check package.json && npmPkgJsonLint . --config .npmpackagejsonlintrc.json",
         "lint:package:fix": "sort-package-json package.json",
         "lint:prettier": "prettier . --log-level warn --cache --cache-location=.cache/.prettier-cache --cache-strategy=content --check",
         "lint:prettier:fix": "prettier . --log-level warn --cache --cache-location=.cache/.prettier-cache --cache-strategy=content --write",
         "lint:publint": "publint",
+        "prepack": "npm run build",
         "package:check": "npm pack --dry-run && publint && attw --pack . --profile esm-only",
         "prepublishOnly": "npm run release:check",
         "release:check": "npm run release:verify",
         "release:verify": "npm run lint && npm run typecheck && npm run test && npm run lint:prettier && npm run lint:package && npm run package:check",
-        "test": "vitest run",
+        "test": "npm run build && vitest run",
         "typecheck": "tsc -p tsconfig.json --noEmit",
         "verify": "npm run release:verify"
+    },
+    "dependencies": {
+        "ts-extras": "^1.0.0"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "^0.18.3",

@@ -4,7 +4,7 @@ export default defineConfig({
     cacheDir: "./.cache/vitest",
     test: {
         coverage: {
-            include: ["*.mjs"],
+            include: ["src/**/*.ts"],
             provider: "v8",
             reporter: [
                 "text",
