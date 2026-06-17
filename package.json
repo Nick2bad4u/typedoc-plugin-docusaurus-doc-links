@@ -1,0 +1,105 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "name": "typedoc-plugin-docusaurus-doc-links",
+    "version": "0.1.0",
+    "private": false,
+    "description": "TypeDoc plugin that prefixes bare generated Markdown doc links so Docusaurus resolves them as local doc files.",
+    "keywords": [
+        "documentation",
+        "typedoc",
+        "typedoc-plugin",
+        "docusaurus",
+        "markdown"
+    ],
+    "homepage": "https://github.com/Nick2bad4u/typedoc-plugin-docusaurus-doc-links#readme",
+    "bugs": {
+        "url": "https://github.com/Nick2bad4u/typedoc-plugin-docusaurus-doc-links/issues",
+        "email": "20943337+Nick2bad4u@users.noreply.github.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Nick2bad4u/typedoc-plugin-docusaurus-doc-links.git"
+    },
+    "license": "MIT",
+    "author": "Nick2bad4u <20943337+Nick2bad4u@users.noreply.github.com> (https://github.com/Nick2bad4u)",
+    "contributors": [
+        {
+            "name": "Nick2bad4u",
+            "email": "20943337+Nick2bad4u@users.noreply.github.com",
+            "url": "https://github.com/Nick2bad4u"
+        }
+    ],
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./docusaurus-doc-links.d.mts",
+            "import": "./docusaurus-doc-links.mjs"
+        },
+        "./core": {
+            "types": "./docusaurus-doc-links-core.d.mts",
+            "import": "./docusaurus-doc-links-core.mjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "./docusaurus-doc-links.mjs",
+    "types": "./docusaurus-doc-links.d.mts",
+    "files": [
+        "docusaurus-doc-links.d.mts",
+        "docusaurus-doc-links.mjs",
+        "docusaurus-doc-links-core.d.mts",
+        "docusaurus-doc-links-core.mjs",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "npm run typecheck",
+        "build:runtime": "npm run build",
+        "changelog:generate": "git-cliff --config cliff.toml --output CHANGELOG.md",
+        "changelog:preview": "git-cliff --config cliff.toml --unreleased",
+        "changelog:release-notes": "git-cliff --config cliff.toml --current --strip all",
+        "coverage": "vitest run --coverage",
+        "lint": "eslint . --cache --cache-strategy content --cache-location .cache/.eslintcache",
+        "lint:package": "sort-package-json --check package.json && npmPkgJsonLint . --config .npmpackagejsonlintrc.json",
+        "lint:package:fix": "sort-package-json package.json",
+        "lint:prettier": "prettier . --log-level warn --cache --cache-location=.cache/.prettier-cache --cache-strategy=content --check",
+        "lint:prettier:fix": "prettier . --log-level warn --cache --cache-location=.cache/.prettier-cache --cache-strategy=content --write",
+        "lint:publint": "publint",
+        "package:check": "npm pack --dry-run && publint && attw --pack . --profile esm-only",
+        "prepublishOnly": "npm run release:check",
+        "release:check": "npm run release:verify",
+        "release:verify": "npm run lint && npm run typecheck && npm run test && npm run lint:prettier && npm run lint:package && npm run package:check",
+        "test": "vitest run",
+        "typecheck": "tsc -p tsconfig.json --noEmit",
+        "verify": "npm run release:verify"
+    },
+    "devDependencies": {
+        "@arethetypeswrong/cli": "^0.18.3",
+        "@types/node": "^25.9.3",
+        "@vitest/coverage-v8": "^4.1.9",
+        "eslint": "^10.5.0",
+        "eslint-config-nick2bad4u": "^1.2.15",
+        "git-cliff": "^2.13.1",
+        "npm-package-json-lint": "^10.4.1",
+        "npm-package-json-lint-config-nick2bad4u": "^1.0.2",
+        "prettier": "^3.8.4",
+        "prettier-config-nick2bad4u": "^1.0.16",
+        "publint": "^0.3.21",
+        "sort-package-json": "^4.0.0",
+        "typedoc": "^0.28.19",
+        "typedoc-plugin-markdown": "^4.12.0",
+        "typescript": "^6.0.3",
+        "vitest": "^4.1.9"
+    },
+    "peerDependencies": {
+        "typedoc": ">=0.28.0"
+    },
+    "packageManager": "npm@11.17.0",
+    "engines": {
+        "node": ">=22.0.0"
+    },
+    "publishConfig": {
+        "provenance": true,
+        "registry": "https://registry.npmjs.org/"
+    },
+    "readme": "README.md"
+}
