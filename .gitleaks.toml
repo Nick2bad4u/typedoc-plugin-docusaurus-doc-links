@@ -1,0 +1,4 @@
+title = "typedoc-plugin-docusaurus-doc-links secret scanning"
+
+[extend]
+    useDefault = true
