@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" viewBox="0 0 256 256">
+  <title>typedoc-plugin-docusaurus-doc-links logo</title>
+  <defs>
+    <linearGradient id="bg" x1="24" x2="232" y1="32" y2="224" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#042f2e"/>
+      <stop offset="0.55" stop-color="#0f766e"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#bg)"/>
+  <path fill="#fff" d="M48 70a30 30 0 0 1 30-30h100a30 30 0 0 1 30 30v116a30 30 0 0 1-30 30H78a30 30 0 0 1-30-30V70Zm30-4a4 4 0 0 0-4 4v116a4 4 0 0 0 4 4h100a4 4 0 0 0 4-4V70a4 4 0 0 0-4-4H78Z"/>
+  <path fill="#ccfbf1" d="M94 104h62v20H94v-20Zm0 38h42v20H94v-20Zm44-2 20-20 20 20-20 20-20-20Z"/>
+</svg>

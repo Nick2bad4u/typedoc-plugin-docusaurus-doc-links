@@ -1,0 +1,14 @@
+comment:
+    behavior: "default"
+    layout: "reach,diff,flags,tree"
+    require_changes: false
+
+coverage:
+    status:
+        patch:
+            default:
+                target: "80%"
+        project:
+            default:
+                target: "auto"
+                threshold: "1%"

@@ -3,3 +3,10 @@ coverage/
 dist/
 node_modules/
 *.tgz
+
+# Docusaurus generated output
+docs/docusaurus/.docusaurus/
+docs/docusaurus/build/
+docs/docusaurus/site-docs/developer/api/
+docs/docusaurus/static/img/coverage.json
+docs/docusaurus/static/img/coverage.svg

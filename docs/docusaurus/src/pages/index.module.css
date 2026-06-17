@@ -1,0 +1,272 @@
+.heroBanner {
+    position: relative;
+    overflow: clip;
+    padding: 4.45rem 0 3.65rem;
+    border-block-end: 1px solid rgb(255 255 255 / 18%);
+    background:
+        radial-gradient(
+            circle at 86% 12%,
+            rgb(45 212 191 / 28%),
+            transparent 40%
+        ),
+        radial-gradient(
+            circle at 16% 90%,
+            rgb(125 211 252 / 30%),
+            transparent 45%
+        ),
+        linear-gradient(
+            134deg,
+            #042f2e 0%,
+            #115e59 38%,
+            #0f766e 72%,
+            #22d3ee 100%
+        );
+    color: #ffffff;
+    isolation: isolate;
+}
+
+.heroContent {
+    position: relative;
+}
+
+.heroGrid {
+    display: grid;
+    align-items: start;
+    gap: clamp(0.85rem, 1.7vi, 1.15rem);
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+}
+
+.heroKicker {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.32rem 0.66rem;
+    border: 1px solid rgb(255 255 255 / 34%);
+    border-radius: 999rem;
+    margin: 0 0 0.75rem;
+    background: rgb(15 23 42 / 28%);
+    color: rgb(224 231 255);
+    font-size: 0.79rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.heroTitle {
+    font-size: clamp(2.1rem, 4.2vi, 3.25rem);
+    margin-block-end: 0.75rem;
+    text-wrap: balance;
+}
+
+.heroSubtitle {
+    margin: 0;
+    color: rgb(239 246 255);
+    font-size: 1.08rem;
+    line-height: 1.5;
+    max-inline-size: 39rem;
+    text-wrap: pretty;
+}
+
+.heroBadgeRow {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    margin-block-start: 0.82rem;
+}
+
+.heroBadge {
+    padding: 0.72rem 0.84rem;
+    border: 1px solid rgb(255 255 255 / 26%);
+    border-radius: 0.88rem;
+    margin: 0;
+    backdrop-filter: blur(10px);
+}
+
+.heroBadgeLabel {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.heroBadgeDescription {
+    margin: 0.36rem 0 0;
+    color: rgb(224 242 254);
+    font-size: 0.77rem;
+    line-height: 1.5;
+}
+
+.heroActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block-start: 0.9rem;
+}
+
+.heroActionButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 0.78rem;
+    box-shadow:
+        0 9px 18px -12px rgb(15 23 42 / 88%),
+        inset 0 1px 0 rgb(255 255 255 / 22%);
+    font-weight: 780;
+    transition:
+        border-color 170ms ease,
+        box-shadow 170ms ease,
+        filter 170ms ease,
+        transform 170ms ease;
+}
+
+.heroActionButton:hover,
+.heroActionButton:focus {
+    box-shadow:
+        0 14px 24px -14px rgb(15 23 42 / 92%),
+        inset 0 1px 0 rgb(255 255 255 / 26%);
+    filter: saturate(1.06) brightness(1.03);
+    transform: translateY(-1px);
+}
+
+.heroActionPrimary {
+    border-color: rgb(204 251 241 / 36%);
+    background: linear-gradient(
+        145deg,
+        rgb(45 212 191 / 90%),
+        rgb(20 184 166 / 90%)
+    );
+    color: rgb(236 253 245);
+}
+
+.heroActionSecondary {
+    border-color: rgb(191 219 254 / 34%);
+    background:
+        linear-gradient(145deg, rgb(186 230 253 / 20%), rgb(147 197 253 / 11%)),
+        rgb(15 23 42 / 28%);
+    color: rgb(222 235 255);
+}
+
+.heroPanel {
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    align-self: stretch;
+    justify-content: center;
+    padding: 1rem;
+    border: 1px solid rgb(255 255 255 / 25%);
+    border-radius: 1rem;
+    margin: 0;
+    backdrop-filter: blur(10px);
+    background:
+        linear-gradient(155deg, rgb(15 23 42 / 45%), rgb(15 23 42 / 22%)),
+        rgb(30 41 59 / 28%);
+    min-block-size: 11rem;
+}
+
+.heroPanelLogo {
+    display: block;
+    block-size: auto;
+    filter: drop-shadow(0 10px 18px rgb(15 23 42 / 45%));
+    inline-size: clamp(11.5rem, 24vi, 17rem);
+}
+
+.heroLiveBadges {
+    margin-block-start: 0.72rem;
+}
+
+.mainContent {
+    padding: 1.75rem 0 3rem;
+}
+
+.cardGrid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.card {
+    --card-background-color: var(--ifm-card-background-color);
+    --card-border-color: var(--ifm-color-emphasis-200);
+    --card-description-color: var(--ifm-color-emphasis-800);
+    --card-shadow: var(--ifm-global-shadow-lw);
+    --card-shadow-hover: var(--ifm-global-shadow-md);
+
+    padding: 1.1rem;
+    border: 1px solid var(--card-border-color);
+    border-radius: 0.95rem;
+    background:
+        linear-gradient(
+            170deg,
+            rgb(20 184 166 / 7%),
+            rgb(14 165 233 / 6%) 48%,
+            transparent
+        ),
+        var(--card-background-color);
+    box-shadow: var(--card-shadow);
+    transition:
+        transform 140ms ease,
+        box-shadow 140ms ease,
+        border-color 140ms ease;
+}
+
+.card:hover,
+.card:focus {
+    border-color: rgb(20 184 166 / 35%);
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+}
+
+.cardTitle {
+    margin: 0;
+    font-size: 1.125rem;
+}
+
+.cardDescription {
+    color: var(--card-description-color);
+    margin-block-end: 0.8rem;
+}
+
+.cardLink {
+    font-weight: 600;
+}
+
+@media (width <= 1024px) {
+    .heroGrid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .heroPanel {
+        margin-inline: auto;
+        max-inline-size: 21rem;
+    }
+}
+
+@media (width <= 640px) {
+    .heroBanner {
+        padding-block: 3.2rem 2.85rem;
+    }
+
+    .heroBadgeRow,
+    .cardGrid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .heroActions {
+        inline-size: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .heroActionButton,
+    .card {
+        transition: none;
+    }
+
+    .heroActionButton:hover,
+    .heroActionButton:focus,
+    .card:hover,
+    .card:focus {
+        transform: none;
+    }
+}

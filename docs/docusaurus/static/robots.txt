@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://nick2bad4u.github.io/typedoc-plugin-docusaurus-doc-links/sitemap.xml

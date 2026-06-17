@@ -1,0 +1,53 @@
+{
+    "$schema": "https://typedoc-plugin-markdown.org/schema.json",
+    "alwaysCreateEntryPointModule": false,
+    "cleanOutputDir": true,
+    "coverageLabel": "TypeDoc Coverage",
+    "coverageOutputPath": "static/img/coverage",
+    "coverageOutputType": "all",
+    "entryPointStrategy": "expand",
+    "entryPoints": [
+        "../../src/plugin.ts",
+        "../../src/core.ts"
+    ],
+    "exclude": [
+        "**/dist/**",
+        "**/node_modules/**",
+        "**/coverage/**",
+        "**/build/**"
+    ],
+    "formatWithPrettier": true,
+    "gitRemote": "origin",
+    "gitRevision": "main",
+    "hostedBaseUrl": "https://nick2bad4u.github.io/typedoc-plugin-docusaurus-doc-links/",
+    "includeVersion": true,
+    "json": "site-docs/developer/api/typedoc.json",
+    "logLevel": "Info",
+    "markdownLinkExternal": true,
+    "name": "typedoc-plugin-docusaurus-doc-links API",
+    "out": "site-docs/developer/api",
+    "plugin": [
+        "typedoc-plugin-remark",
+        "typedoc-plugin-missing-exports",
+        "typedoc-plugin-markdown",
+        "typedoc-plugin-mdn-links",
+        "typedoc-plugin-rename-defaults",
+        "typedoc-plugin-coverage",
+        "typedoc-docusaurus-theme"
+    ],
+    "readme": "none",
+    "sort": [
+        "source-order",
+        "alphabetical"
+    ],
+    "theme": "markdown",
+    "tsconfig": "tsconfig.typedoc.json",
+    "useFirstParagraphOfCommentAsSummary": true,
+    "validation": {
+        "invalidLink": true,
+        "invalidPath": true,
+        "notDocumented": false,
+        "notExported": false,
+        "rewrittenLink": true
+    }
+}

@@ -1,3 +1,4 @@
+import { safeCastTo } from "ts-extras";
 import {
     type Application,
     PageEvent,
@@ -11,11 +12,11 @@ import { prefixBareMarkdownFileLinksInMarkdown } from "./core.js";
  *
  * @param app - TypeDoc app instance.
  */
-export function load(app: Application): void {
+export function load(app: Readonly<Application>): void {
     app.renderer.on(PageEvent.END, onPageEnd);
 }
 
-function onPageEnd(page: TypeDocPageEvent): void {
+function onPageEnd(page: Readonly<TypeDocPageEvent>): void {
     if (typeof page.contents !== "string") {
         return;
     }
@@ -24,5 +25,6 @@ function onPageEnd(page: TypeDocPageEvent): void {
         return;
     }
 
-    page.contents = prefixBareMarkdownFileLinksInMarkdown(page.contents);
+    safeCastTo<TypeDocPageEvent>(page).contents =
+        prefixBareMarkdownFileLinksInMarkdown(page.contents);
 }

@@ -1,0 +1,15 @@
+{
+    "background_color": "#111827",
+    "display": "standalone",
+    "icons": [
+        {
+            "sizes": "any",
+            "src": "img/logo.svg",
+            "type": "image/svg+xml"
+        }
+    ],
+    "name": "typedoc-plugin-docusaurus-doc-links",
+    "short_name": "docusaurus-doc-links",
+    "start_url": "/typedoc-plugin-docusaurus-doc-links/",
+    "theme_color": "#0f766e"
+}

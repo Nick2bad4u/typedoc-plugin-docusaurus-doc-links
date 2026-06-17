@@ -1,0 +1,31 @@
+{
+    "$schema": "https://www.schemastore.org/tsconfig.json",
+    "compilerOptions": {
+        "allowJs": true,
+        "ignoreDeprecations": "6.0",
+        "isolatedDeclarations": false,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "types": [
+            "node"
+        ]
+    },
+    "exclude": [
+        ".docusaurus",
+        "build",
+        "node_modules",
+        "site-docs/developer/api"
+    ],
+    "extends": [
+        "../../tsconfig.json",
+        "@docusaurus/tsconfig"
+    ],
+    "include": [
+        "docusaurus.config.ts",
+        "sidebars.ts",
+        "src/**/*"
+    ]
+}
