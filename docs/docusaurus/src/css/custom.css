@@ -9,11 +9,6 @@
     --ifm-code-font-size: 95%;
     --ifm-font-family-base:
         "Inter var", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-    --sb-accent-overview: #22c55e;
-    --sb-accent-started: #0ea5e9;
-    --sb-accent-guides: #06b6d4;
-    --sb-accent-api-overview: #14b8a6;
-    --sb-accent-developer: #8b5cf6;
 }
 
 [data-theme="dark"] {
@@ -24,49 +19,26 @@
     --ifm-color-primary-light: #5eead4;
     --ifm-color-primary-lighter: #99f6e4;
     --ifm-color-primary-lightest: #ccfbf1;
-    --sb-accent-overview: #4ade80;
-    --sb-accent-started: #38bdf8;
-    --sb-accent-guides: #67e8f9;
-    --sb-accent-api-overview: #2dd4bf;
-    --sb-accent-developer: #c084fc;
+}
+
+.navbar .navbar__item,
+.footer .footer__link-item,
+.theme-doc-sidebar-menu .menu__link {
+    font-family:
+        "Symbols Nerd Font Mono", "Symbols Nerd Font", "Segoe UI Emoji",
+        "Apple Color Emoji", "Noto Color Emoji", system-ui;
 }
 
 .theme-doc-sidebar-menu .menu__link {
     border-radius: 0.45rem;
     transition:
         background-color 140ms ease-in-out,
-        border-color 140ms ease-in-out,
         color 140ms ease-in-out;
 }
 
-.theme-doc-sidebar-menu li[class*="sb-"] > .menu__link,
-.theme-doc-sidebar-menu
-    li[class*="sb-"]
-    > .menu__list-item-collapsible
-    .menu__link {
-    border-inline-start: 4px solid transparent;
-    padding-inline-start: calc(var(--ifm-menu-link-padding-horizontal) - 4px);
-}
-
-.sb-doc-overview > .menu__link {
-    border-inline-start-color: var(--sb-accent-overview);
-}
-
-.sb-doc-getting-started > .menu__link {
-    border-inline-start-color: var(--sb-accent-started);
-}
-
-.sb-cat-guides > .menu__list-item-collapsible .menu__link {
-    border-inline-start-color: var(--sb-accent-guides);
-}
-
-.sb-cat-api-overview > .menu__list-item-collapsible .menu__link,
-.sb-cat-api-overview .menu__list .menu__link {
-    border-inline-start-color: var(--sb-accent-api-overview);
-}
-
-.sb-cat-developer > .menu__list-item-collapsible .menu__link {
-    border-inline-start-color: var(--sb-accent-developer);
+.footer .footer__logo {
+    max-block-size: 3.5rem;
+    max-inline-size: 3.5rem;
 }
 
 .markdown h1,

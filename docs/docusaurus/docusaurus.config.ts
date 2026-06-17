@@ -97,6 +97,12 @@ const config = {
                     sidebarCollapsible: true,
                     sidebarPath: "./sidebars.ts",
                 },
+                googleTagManager: {
+                    containerId: "GTM-T8J6HPLF",
+                },
+                gtag: {
+                    trackingID: "G-18DR1S6R1T",
+                },
                 pages: {
                     editUrl: `${repositoryUrl}/blob/main/docs/docusaurus/`,
                     routeBasePath: "/",
@@ -128,36 +134,36 @@ const config = {
                 {
                     items: [
                         {
-                            label: "Overview",
+                            label: "󰈙 Overview",
                             to: "/docs/intro",
                         },
                         {
-                            label: "Getting Started",
+                            label: "🚀 Getting Started",
                             to: "/docs/getting-started",
                         },
                         {
-                            label: "API Reference",
+                            label: "󰘦 API Reference",
                             to: "/docs/category/api-reference",
                         },
                     ],
-                    title: "Docs",
+                    title: "󰈙 Docs",
                 },
                 {
                     items: [
                         {
                             href: repositoryUrl,
-                            label: "GitHub",
+                            label: "󰊤 GitHub",
                         },
                         {
                             href: `https://www.npmjs.com/package/${projectName}`,
-                            label: "npm",
+                            label: "󰎙 npm",
                         },
                         {
                             href: `https://app.codecov.io/gh/${organizationName}/${projectName}`,
-                            label: "Codecov",
+                            label: "📈 Codecov",
                         },
                     ],
-                    title: "Project",
+                    title: "󰏗 Project",
                 },
             ],
             logo: {
@@ -172,23 +178,23 @@ const config = {
             hideOnScroll: true,
             items: [
                 {
-                    label: "Docs",
+                    label: "󰈙 Docs",
                     position: "left",
                     to: "/docs/intro",
                 },
                 {
-                    label: "API",
+                    label: "󰘦 API",
                     position: "left",
                     to: "/docs/category/api-reference",
                 },
                 {
                     href: repositoryUrl,
-                    label: "GitHub",
+                    label: "󰊤 GitHub",
                     position: "right",
                 },
                 {
                     href: `https://www.npmjs.com/package/${projectName}`,
-                    label: "npm",
+                    label: "󰎙 npm",
                     position: "right",
                 },
             ],
