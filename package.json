@@ -91,43 +91,45 @@
         "typecheck": "npx -y tsc -p tsconfig.json --noEmit && npm run docs:typecheck",
         "types:update": "npx typesync",
         "update-actions": "npx actions-up --yes --style sha",
+        "update-all": "npm run update-actions && npm run update-deps",
         "update-deps": "npx ncu -i --install never && npm update --force && npm install --force && npm run sync:peer-typedoc-range && npm run sync:node-version-files",
         "verify": "npm run release:verify"
     },
     "dependencies": {
-        "ts-extras": "^1.0.0"
+        "ts-extras": "^1.2.0"
     },
     "devDependencies": {
-        "@arethetypeswrong/cli": "^0.18.3",
+        "@arethetypeswrong/cli": "^0.18.4",
         "@microsoft/tsdoc-config": "^0.18.1",
-        "@types/node": "^25.9.3",
-        "@vitest/coverage-v8": "^4.1.9",
-        "eslint": "^10.5.0",
-        "eslint-config-nick2bad4u": "^2.0.4",
+        "@types/node": "^26.1.0",
+        "@vitest/coverage-v8": "^4.1.10",
+        "eslint": "^10.6.0",
+        "eslint-config-nick2bad4u": "^3.3.1",
         "git-cliff": "^2.13.1",
-        "gitleaks-config-nick2bad4u": "^1.0.2",
+        "gitleaks-config-nick2bad4u": "^1.0.3",
         "npm-package-json-lint": "^10.4.1",
-        "npm-package-json-lint-config-nick2bad4u": "^1.0.3",
-        "prettier": "^3.8.4",
-        "prettier-config-nick2bad4u": "^1.0.17",
+        "npm-package-json-lint-config-nick2bad4u": "^1.0.4",
+        "prettier": "^3.9.4",
+        "prettier-config-nick2bad4u": "^1.0.23",
         "publint": "^0.3.21",
         "remark": "^15.0.1",
         "remark-cli": "^12.0.1",
-        "remark-config-nick2bad4u": "^1.0.8",
+        "remark-config-nick2bad4u": "^1.1.3",
+        "secretlint-config-nick2bad4u": "^1.1.2",
         "sort-package-json": "^4.0.0",
-        "stylelint": "^17.13.0",
-        "stylelint-config-nick2bad4u": "^1.0.19",
-        "tsdoc-config-nick2bad4u": "^1.0.5",
-        "typedoc": "^0.28.19",
-        "typedoc-config-nick2bad4u": "^1.1.0",
+        "stylelint": "^17.14.0",
+        "stylelint-config-nick2bad4u": "^1.0.20",
+        "tsdoc-config-nick2bad4u": "^1.0.6",
+        "typedoc": "^0.28.20",
+        "typedoc-config-nick2bad4u": "^2.0.1",
         "typedoc-plugin-markdown": "^4.12.0",
         "typescript": "^6.0.3",
-        "vitest": "^4.1.9"
+        "vitest": "^4.1.10"
     },
     "peerDependencies": {
-        "typedoc": "^0.28.19"
+        "typedoc": "^0.28.20"
     },
-    "packageManager": "npm@11.17.0",
+    "packageManager": "npm@11.18.0",
     "engines": {
         "node": ">=22.0.0"
     },
