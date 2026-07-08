@@ -10,3 +10,5 @@ docs/docusaurus/build/
 docs/docusaurus/site-docs/developer/api/
 docs/docusaurus/static/img/coverage.json
 docs/docusaurus/static/img/coverage.svg
+.lychee.report.md
+.lycheecache

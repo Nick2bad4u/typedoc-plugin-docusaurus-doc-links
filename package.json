@@ -54,9 +54,9 @@
     "scripts": {
         "build": "npm run clean:dist && npx -y tsc -p tsconfig.build.json",
         "build:runtime": "npm run build",
-        "changelog:generate": "npx -y git-cliff --config cliff.toml --output CHANGELOG.md",
-        "changelog:preview": "npx -y git-cliff --config cliff.toml --unreleased",
-        "changelog:release-notes": "npx -y git-cliff --config cliff.toml --current --strip all",
+        "changelog:generate": "git cliff --config node_modules/gitcliff-config-nick2bad4u/cliff.toml --github-repo Nick2bad4u/typedoc-plugin-docusaurus-doc-links --output CHANGELOG.md",
+        "changelog:preview": "git cliff --config node_modules/gitcliff-config-nick2bad4u/cliff.toml --github-repo Nick2bad4u/typedoc-plugin-docusaurus-doc-links --unreleased",
+        "changelog:release-notes": "git cliff --config node_modules/gitcliff-config-nick2bad4u/cliff.toml --github-repo Nick2bad4u/typedoc-plugin-docusaurus-doc-links --current",
         "clean:dist": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
         "clean:docs": "node -e \"require('node:fs').rmSync('docs/docusaurus/build',{recursive:true,force:true});require('node:fs').rmSync('docs/docusaurus/.docusaurus',{recursive:true,force:true});require('node:fs').rmSync('docs/docusaurus/site-docs/developer/api',{recursive:true,force:true})\"",
         "coverage": "npm run build && npx -y vitest run --coverage",
@@ -93,7 +93,10 @@
         "update-actions": "npx actions-up --yes --style sha",
         "update-all": "npm run update-actions && npm run update-deps",
         "update-deps": "npx ncu -i --install never && npm update --force && npm install --force && npm run sync:peer-typedoc-range && npm run sync:node-version-files",
-        "verify": "npm run release:verify"
+        "verify": "npm run release:verify",
+        "lint:jscpd": "jscpd --config node_modules/jscpd-config-nick2bad4u/jscpd.json",
+        "lint:lychee": "lychee --config node_modules/lychee-config-nick2bad4u/lychee.toml .",
+        "lint:lychee:smoke": "lychee --config node_modules/lychee-config-nick2bad4u/lychee.toml --dump-inputs README.md"
     },
     "dependencies": {
         "ts-extras": "^1.2.0"
@@ -106,7 +109,11 @@
         "eslint": "^10.6.0",
         "eslint-config-nick2bad4u": "^3.3.1",
         "git-cliff": "^2.13.1",
+        "gitcliff-config-nick2bad4u": "^1.1.0",
         "gitleaks-config-nick2bad4u": "^1.0.3",
+        "jscpd": "^5.0.12",
+        "jscpd-config-nick2bad4u": "^1.0.0",
+        "lychee-config-nick2bad4u": "^1.0.0",
         "npm-package-json-lint": "^10.4.1",
         "npm-package-json-lint-config-nick2bad4u": "^1.0.4",
         "prettier": "^3.9.4",
