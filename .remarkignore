@@ -12,6 +12,7 @@
 **/dist/
 **/node_modules/
 **/playwright-report/
+**/reports/
 **/temp/
 **/test-results/
 **/tmp/

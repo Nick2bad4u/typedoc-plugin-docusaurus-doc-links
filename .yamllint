@@ -1,9 +1,10 @@
 ---
-extends: "default"
+extends: "node_modules/yamllint-config-nick2bad4u/.yamllint"
 
 rules:
     comments: "disable"
     comments-indentation: "disable"
     document-start: "disable"
     line-length: "disable"
+    quoted-strings: "disable"
     truthy: "disable"
