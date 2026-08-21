@@ -36,10 +36,18 @@ describe("typedoc-plugin-docusaurus-doc-links", () => {
                     '[With title](api/index.md "API")',
                     "[Angle](<api/index.md>)",
                     "[Query](api/index.md?x=1#section)",
+                    String.raw`[Escaped\](api/index.md)`,
                     "`[Code](api/index.md)`",
-                    "```",
+                    "````ts",
                     "[Fenced](api/index.md)",
                     "```",
+                    "[Still fenced after short closer](api/index.md)",
+                    "~~~~",
+                    "[Still fenced after other marker](api/index.md)",
+                    "````not-a-closing-fence",
+                    "[Still fenced](api/index.md)",
+                    "````",
+                    "[After fence](after.md)",
                 ].join("\n")
             )
         ).toStrictEqual(
@@ -51,10 +59,46 @@ describe("typedoc-plugin-docusaurus-doc-links", () => {
                 '[With title](./api/index.md "API")',
                 "[Angle](<./api/index.md>)",
                 "[Query](./api/index.md?x=1#section)",
+                String.raw`[Escaped\](api/index.md)`,
                 "`[Code](api/index.md)`",
-                "```",
+                "````ts",
                 "[Fenced](api/index.md)",
                 "```",
+                "[Still fenced after short closer](api/index.md)",
+                "~~~~",
+                "[Still fenced after other marker](api/index.md)",
+                "````not-a-closing-fence",
+                "[Still fenced](api/index.md)",
+                "````",
+                "[After fence](./after.md)",
+            ].join("\n")
+        );
+    });
+
+    it("handles malformed and nested inline destinations conservatively", () => {
+        expect.assertions(1);
+
+        expect(
+            prefixBareMarkdownFileLinksInMarkdown(
+                [
+                    "not](target.md)",
+                    "[Unclosed](target.md",
+                    "[]()",
+                    "[Nested](folder/(draft).md)",
+                    String.raw`[Escaped destination](folder\ name.md)`,
+                    String.raw`[Angle escape](<folder\>name.md> "Title")`,
+                    "[Unclosed angle](<target.md)",
+                ].join("\n")
+            )
+        ).toBe(
+            [
+                "not](target.md)",
+                "[Unclosed](target.md",
+                "[]()",
+                "[Nested](./folder/(draft).md)",
+                String.raw`[Escaped destination](./folder\ name.md)`,
+                String.raw`[Angle escape](<./folder\>name.md> "Title")`,
+                "[Unclosed angle](<target.md)",
             ].join("\n")
         );
     });
@@ -70,7 +114,7 @@ describe("typedoc-plugin-docusaurus-doc-links", () => {
     });
 
     it("loads in a real TypeDoc markdown run from a consumer-style fixture", async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         await rm(fixtureDirectory, {
             force: true,
@@ -116,7 +160,7 @@ describe("typedoc-plugin-docusaurus-doc-links", () => {
                 writeFile(
                     nodePath.join(fixtureDirectory, "src", "index.ts"),
                     [
-                        "/** Source docs. */",
+                        "/** See {@link target}. */",
                         "export function source(): void {}",
                         "/** Target docs. */",
                         "export function target(): void {}",
@@ -192,6 +236,9 @@ describe("typedoc-plugin-docusaurus-doc-links", () => {
             expect(output).toContain("markdown generated");
             expect(generatedMarkdown).toContain("source");
             expect(generatedMarkdown).toContain("target");
+            expect(generatedMarkdown).toContain(
+                "[target](./functions/target.md)"
+            );
         } finally {
             await rm(fixtureDirectory, {
                 force: true,

@@ -7,6 +7,11 @@ interface FenceState {
     marker: "`" | "~";
 }
 
+interface InlineLinkDestinationParts {
+    destination: string;
+    remainder: string;
+}
+
 /**
  * Prefixes bare intra-doc Markdown file links with `./`.
  *
@@ -23,19 +28,20 @@ export function prefixBareMarkdownFileLinksInMarkdown(input: string): string {
     let fenceState: FenceState | null = null;
 
     const outLines = lines.map((line) => {
-        const fenceMatch = /^\s*(?<marker>[`~])\k<marker>{2,}/v.exec(line);
+        const fenceMatch = /^[\t ]{0,3}(?<run>`{3,}|~{3,})/v.exec(line);
         if (fenceMatch) {
-            const [matchText] = fenceMatch;
-            const run = matchText.trimStart();
-            const markerChar = fenceMatch.groups?.marker ?? run.charAt(0);
+            const run = fenceMatch.groups?.run ?? "";
+            const markerChar = run.charAt(0);
             const marker = markerChar === "`" ? "`" : "~";
             const { length } = run;
+            const rest = line.slice(fenceMatch[0].length);
 
             if (fenceState === null) {
                 fenceState = { length, marker };
             } else if (
                 marker === fenceState.marker &&
-                length >= fenceState.length
+                length >= fenceState.length &&
+                rest.trim().length === 0
             ) {
                 fenceState = null;
             }
@@ -51,6 +57,22 @@ export function prefixBareMarkdownFileLinksInMarkdown(input: string): string {
     });
 
     return arrayJoin(outLines, newline);
+}
+
+function countCharacterRun(
+    value: string,
+    startIndex: number,
+    character: string
+): number {
+    let count = 0;
+    while (
+        startIndex + count < value.length &&
+        value.charAt(startIndex + count) === character
+    ) {
+        count += 1;
+    }
+
+    return count;
 }
 
 function findInlineLinkClosingParen(input: string, startIndex: number): number {
@@ -204,92 +226,84 @@ function prefixInlineMarkdownLinksInLine(line: string): string {
     let index = 0;
     let codeSpanLength: null | number = null;
 
-    const countRun = (startIndex: number, character: string): number => {
-        let count = 0;
-        while (
-            startIndex + count < line.length &&
-            line.charAt(startIndex + count) === character
-        ) {
-            count += 1;
-        }
-
-        return count;
-    };
-
     while (index < line.length) {
-        const tickRun = line.charAt(index) === "`" ? countRun(index, "`") : 0;
+        const tickRun =
+            line.charAt(index) === "`"
+                ? countCharacterRun(line, index, "`")
+                : 0;
         if (tickRun > 0) {
-            if (codeSpanLength === null) {
-                codeSpanLength = tickRun;
-            } else if (tickRun === codeSpanLength) {
-                codeSpanLength = null;
-            }
-
+            codeSpanLength = toggleCodeSpan(codeSpanLength, tickRun);
             out += line.slice(index, index + tickRun);
             index += tickRun;
-        } else if (
+            continue;
+        }
+
+        if (
             codeSpanLength === null &&
             line.charAt(index) === "]" &&
-            line.charAt(index + 1) === "("
+            line.charAt(index + 1) === "(" &&
+            !isEscaped(line, index)
         ) {
-            const labelOpen = findInlineLinkLabelOpenBracket(line, index);
-
-            if (labelOpen === -1) {
-                out += line.charAt(index);
-                index += 1;
-            } else {
-                const urlStart = index + 2;
-                const end = findInlineLinkClosingParen(line, urlStart);
-
-                if (end === -1) {
-                    out += line.charAt(index);
-                    index += 1;
-                } else {
-                    const payload = line.slice(urlStart, end);
-                    const rewrittenPayload = prefixInlineLinkPayload(payload);
-
-                    out += `](${rewrittenPayload})`;
-                    index = end + 1;
-                }
+            const rewrittenLink = rewriteInlineLinkAt(line, index);
+            if (rewrittenLink !== null) {
+                out += rewrittenLink.value;
+                index = rewrittenLink.nextIndex;
+                continue;
             }
-        } else {
-            out += line.charAt(index);
-            index += 1;
         }
+
+        out += line.charAt(index);
+        index += 1;
     }
 
     return out;
 }
 
-function splitInlineLinkDestination(payload: string): {
-    destination: string;
-    remainder: string;
-} {
-    const core = payload.trim();
-    if (core.length === 0) {
-        return { destination: "", remainder: "" };
+function rewriteInlineLinkAt(
+    line: string,
+    labelCloseIndex: number
+): null | { nextIndex: number; value: string } {
+    const labelOpen = findInlineLinkLabelOpenBracket(line, labelCloseIndex);
+    if (labelOpen === -1) {
+        return null;
     }
 
-    if (core.startsWith("<")) {
-        let index = 1;
-        while (index < core.length) {
-            const character = core.charAt(index);
+    const urlStart = labelCloseIndex + 2;
+    const end = findInlineLinkClosingParen(line, urlStart);
+    if (end === -1) {
+        return null;
+    }
 
-            if (character === "\\") {
-                index += 2;
-            } else if (character === ">") {
-                return {
-                    destination: core.slice(0, index + 1),
-                    remainder: core.slice(index + 1),
-                };
-            } else {
-                index += 1;
-            }
+    const payload = line.slice(urlStart, end);
+    return {
+        nextIndex: end + 1,
+        value: `](${prefixInlineLinkPayload(payload)})`,
+    };
+}
+
+function splitAngleWrappedDestination(
+    core: string
+): InlineLinkDestinationParts {
+    let index = 1;
+    while (index < core.length) {
+        const character = core.charAt(index);
+
+        if (character === "\\") {
+            index += 2;
+        } else if (character === ">") {
+            return {
+                destination: core.slice(0, index + 1),
+                remainder: core.slice(index + 1),
+            };
+        } else {
+            index += 1;
         }
-
-        return { destination: core, remainder: "" };
     }
 
+    return { destination: "", remainder: core };
+}
+
+function splitBareDestination(core: string): InlineLinkDestinationParts {
     let depth = 0;
     let index = 0;
     while (index < core.length) {
@@ -302,10 +316,7 @@ function splitInlineLinkDestination(payload: string): {
         }
 
         if (character === ")") {
-            if (depth > 0) {
-                depth -= 1;
-            }
-
+            depth = Math.max(0, depth - 1);
             index += 1;
             continue;
         }
@@ -326,4 +337,28 @@ function splitInlineLinkDestination(payload: string): {
     }
 
     return { destination: core, remainder: "" };
+}
+
+function splitInlineLinkDestination(
+    payload: string
+): InlineLinkDestinationParts {
+    const core = payload.trim();
+    if (core.length === 0) {
+        return { destination: "", remainder: "" };
+    }
+
+    return core.startsWith("<")
+        ? splitAngleWrappedDestination(core)
+        : splitBareDestination(core);
+}
+
+function toggleCodeSpan(
+    currentLength: null | number,
+    encounteredLength: number
+): null | number {
+    if (currentLength === null) {
+        return encounteredLength;
+    }
+
+    return currentLength === encounteredLength ? null : currentLength;
 }

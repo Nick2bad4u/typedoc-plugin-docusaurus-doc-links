@@ -4,6 +4,7 @@ dist/
 node_modules/
 .stylelintcache
 reports/
+test-report.junit.xml
 *.tgz
 
 # Docusaurus generated output

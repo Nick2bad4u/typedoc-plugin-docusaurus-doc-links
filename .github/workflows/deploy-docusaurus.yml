@@ -50,8 +50,20 @@ jobs:
                   cache: "npm"
                   cache-dependency-path: "package-lock.json"
 
+            - name: "Setup repository npm version"
+              run: |
+                  set -euo pipefail
+                  package_manager=$(node -p "require('./package.json').packageManager")
+                  if [[ ! "$package_manager" =~ ^npm@([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+                    echo "packageManager must pin an exact npm version, received: $package_manager" >&2
+                    exit 1
+                  fi
+                  expected_npm_version="${BASH_REMATCH[1]}"
+                  npm install --global "npm@${expected_npm_version}" --ignore-scripts
+                  test "$(npm --version)" = "$expected_npm_version"
+
             - name: "Install dependencies"
-              run: "npm ci --force"
+              run: "npm ci"
 
             - name: "Build package"
               run: "npm run build"
