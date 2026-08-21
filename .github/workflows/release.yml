@@ -36,17 +36,6 @@ on:
                 description: "Explicit release version in x.y.z format (overrides release_type)"
                 required: false
                 type: "string"
-            ref:
-                description: "Branch to release from when running manually"
-                required: false
-                default: "main"
-                type: "string"
-            skip_verify:
-                description: "Skip package verification (manual dispatch only; use with caution)"
-                required: false
-                default: false
-                type: "boolean"
-
 defaults:
     run:
         shell: "bash"
@@ -70,8 +59,6 @@ jobs:
             CI: "true"
             DEFAULT_RELEASE_BRANCH: "main"
             NPM_REGISTRY_URL: "https://registry.npmjs.org"
-            RELEASE_NOTES_PATH: "temp/release-notes.md"
-            RELEASE_ASSETS_DIR: "temp/release-assets"
         concurrency:
             group: "release-pipeline"
             cancel-in-progress: false
@@ -84,22 +71,11 @@ jobs:
 
             - name: "Resolve target ref"
               id: "target_ref"
-              env:
-                  WORKFLOW_DISPATCH_REF: "${{ inputs.ref }}"
               run: |
                   set -euo pipefail
                   if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-                    branch="${WORKFLOW_DISPATCH_REF:-}"
-                    if [ -z "$branch" ]; then
-                      branch="${DEFAULT_RELEASE_BRANCH}"
-                    fi
-                    branch="${branch#refs/heads/}"
-                    if [[ "$branch" == refs/tags/* ]]; then
-                      echo "workflow_dispatch ref must be a branch, not a tag: $branch" >&2
-                      exit 1
-                    fi
-                    echo "ref=$branch" >> "$GITHUB_OUTPUT"
-                    echo "branch=$branch" >> "$GITHUB_OUTPUT"
+                    echo "ref=${DEFAULT_RELEASE_BRANCH}" >> "$GITHUB_OUTPUT"
+                    echo "branch=${DEFAULT_RELEASE_BRANCH}" >> "$GITHUB_OUTPUT"
                   else
                     echo "ref=${GITHUB_REF}" >> "$GITHUB_OUTPUT"
                     echo "branch=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
@@ -117,20 +93,35 @@ jobs:
               uses: "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e" # v6.4.0
               with:
                   node-version-file: ".node-version"
+                  package-manager-cache: false
                   registry-url: "${{ env.NPM_REGISTRY_URL }}"
-                  cache: "npm"
-                  cache-dependency-path: "package-lock.json"
+
+            - name: "Setup repository npm version"
+              run: |
+                  set -euo pipefail
+                  package_manager=$(node -p "require('./package.json').packageManager")
+                  if [[ ! "$package_manager" =~ ^npm@([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+                    echo "packageManager must pin an exact npm version, received: $package_manager" >&2
+                    exit 1
+                  fi
+                  expected_npm_version="${BASH_REMATCH[1]}"
+                  npm install --global "npm@${expected_npm_version}" --ignore-scripts
+                  actual_npm_version=$(npm --version)
+                  if [ "$actual_npm_version" != "$expected_npm_version" ]; then
+                    echo "Expected npm ${expected_npm_version}, received ${actual_npm_version}." >&2
+                    exit 1
+                  fi
 
             - name: "Install native lint tools"
               run: |
                   set -euo pipefail
-                  go install github.com/zricethezav/gitleaks/v8@v8.30.1
+                  go install github.com/zricethezav/gitleaks/v8@83d9cd684c87d95d656c1458ef04895a7f1cbd8e # v8.30.1
                   echo "${HOME}/go/bin" >> "${GITHUB_PATH}"
                   python -m pip install --user --disable-pip-version-check yamllint==1.38.0
                   echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
 
             - name: "Install dependencies"
-              run: "npm ci --force"
+              run: "npm ci"
 
             - name: "Configure Git for release automation"
               if: "github.event_name == 'workflow_dispatch'"
@@ -177,22 +168,21 @@ jobs:
                     exit 1
                   fi
 
-            - name: "Warn when package verification is skipped"
-              if: "${{ github.event_name == 'workflow_dispatch' && inputs.skip_verify }}"
-              run: |
-                  echo "::warning::Skipping 'Verify package' because workflow_dispatch input 'skip_verify' is true."
-                  echo "::warning::Use this only when release checks were validated locally before dispatch."
-
-            - name: "Verify package"
-              if: "${{ github.event_name != 'workflow_dispatch' || !inputs.skip_verify }}"
-              run: "npm run release:check"
-
-            - name: "Ensure verification did not modify tracked files"
-              if: "startsWith(github.ref, 'refs/tags/v')"
+            - name: "Capture pre-verification worktree state"
               run: |
                   set -euo pipefail
-                  if ! git diff --quiet || ! git diff --cached --quiet; then
-                    echo "release:check modified files on a tag-triggered release. Ensure main is clean before tagging." >&2
+                  git status --porcelain=v1 --untracked-files=all > "${RUNNER_TEMP}/release-status-before.txt"
+
+            - name: "Verify package"
+              run: "npm run release:check"
+
+            - name: "Ensure verification preserved the complete worktree state"
+              run: |
+                  set -euo pipefail
+                  git status --porcelain=v1 --untracked-files=all > "${RUNNER_TEMP}/release-status-after.txt"
+                  if ! cmp -s "${RUNNER_TEMP}/release-status-before.txt" "${RUNNER_TEMP}/release-status-after.txt"; then
+                    echo "release:check changed the worktree." >&2
+                    diff -u "${RUNNER_TEMP}/release-status-before.txt" "${RUNNER_TEMP}/release-status-after.txt" || true
                     git status --short
                     exit 1
                   fi
@@ -237,6 +227,10 @@ jobs:
               if: "github.event_name == 'workflow_dispatch'"
               run: "npm run build"
 
+            - name: "Refresh changelog after manual version bump"
+              if: "github.event_name == 'workflow_dispatch'"
+              run: "npm run changelog:generate"
+
             - name: "Check whether version is already published"
               id: "npm_check"
               env:
@@ -260,6 +254,90 @@ jobs:
                   echo "Version ${VERSION} is already published. Choose a new release type/version." >&2
                   exit 1
 
+            - name: "Prevent duplicate workflow_dispatch tag or GitHub release"
+              if: "github.event_name == 'workflow_dispatch'"
+              env:
+                  GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+                  TAG: "${{ steps.version.outputs.tag }}"
+              run: |
+                  set -euo pipefail
+                  if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+                    echo "Tag ${TAG} already exists on origin." >&2
+                    exit 1
+                  fi
+                  if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+                    echo "GitHub release ${TAG} already exists." >&2
+                    exit 1
+                  fi
+
+            - name: "Build package for publish"
+              run: "npm run build:runtime"
+
+            - name: "Create and validate release archives"
+              id: "release_assets"
+              env:
+                  PACKAGE_NAME: "${{ steps.version.outputs.package_name }}"
+                  VERSION: "${{ steps.version.outputs.version }}"
+              run: |
+                  set -euo pipefail
+
+                  assets_dir="${RUNNER_TEMP}/release-assets"
+                  unpack_dir="${RUNNER_TEMP}/release-package"
+                  pack_metadata_path="${assets_dir}/npm-pack.json"
+                  mkdir -p "$assets_dir"
+                  rm -rf "$unpack_dir"
+
+                  npm pack --json --ignore-scripts --pack-destination "$assets_dir" > "$pack_metadata_path"
+
+                  tarball_filename=$(
+                    node -e "
+                      const fs = require('node:fs');
+                      const packMetadata = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
+                      const records = Array.isArray(packMetadata)
+                        ? packMetadata
+                        : Object.values(packMetadata);
+                      if (records.length !== 1) {
+                        throw new Error('Expected exactly one npm pack record.');
+                      }
+                      const filename = records[0]?.filename;
+                      if (typeof filename !== 'string' || filename.trim().length === 0) {
+                        throw new Error('npm pack did not provide a valid filename.');
+                      }
+                      process.stdout.write(filename);
+                    " "$pack_metadata_path"
+                  )
+                  tarball_path="${assets_dir}/${tarball_filename}"
+                  safe_package_name=$(printf '%s' "$PACKAGE_NAME" | sed 's/^@//; s#/#-#g')
+                  zip_basename="${safe_package_name}-${VERSION}"
+
+                  mkdir -p "$unpack_dir"
+                  tar -xzf "$tarball_path" -C "$unpack_dir"
+                  node -e "
+                    const fs = require('node:fs');
+                    const manifest = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
+                    const expectedName = process.argv[2];
+                    const expectedVersion = process.argv[3];
+                    if (manifest.name !== expectedName || manifest.version !== expectedVersion) {
+                      throw new Error(
+                        'Packed manifest mismatch: expected ' + expectedName + '@' + expectedVersion +
+                        ', received ' + manifest.name + '@' + manifest.version + '.'
+                      );
+                    }
+                  " "$unpack_dir/package/package.json" "$PACKAGE_NAME" "$VERSION"
+                  mv "$unpack_dir/package" "$unpack_dir/${zip_basename}"
+
+                  (
+                    cd "$unpack_dir"
+                    zip -rq "${assets_dir}/${zip_basename}.zip" "${zip_basename}"
+                  )
+
+                  {
+                    echo "tarball_path=$tarball_path"
+                    echo "zip_path=${assets_dir}/${zip_basename}.zip"
+                    echo "tarball_name=$tarball_filename"
+                    echo "zip_name=${zip_basename}.zip"
+                  } >> "$GITHUB_OUTPUT"
+
             - name: "Commit and push release version + tag"
               if: "github.event_name == 'workflow_dispatch'"
               env:
@@ -273,18 +351,55 @@ jobs:
                     exit 1
                   fi
 
-                  git add -A
+                  mapfile -t changed_paths < <(git diff --name-only)
+                  mapfile -t untracked_paths < <(git ls-files --others --exclude-standard)
+
+                  if [ "${#untracked_paths[@]}" -ne 0 ]; then
+                    echo "Unexpected untracked files before the release commit:" >&2
+                    printf ' - %s\n' "${untracked_paths[@]}" >&2
+                    exit 1
+                  fi
+
+                  for path in "${changed_paths[@]}"; do
+                    case "$path" in
+                      CHANGELOG.md|package.json|package-lock.json)
+                        ;;
+                      *)
+                        echo "Unexpected tracked release mutation: $path" >&2
+                        exit 1
+                        ;;
+                    esac
+                  done
+
+                  git add -- CHANGELOG.md package.json package-lock.json
+                  mapfile -t staged_paths < <(git diff --cached --name-only)
+                  for path in "${staged_paths[@]}"; do
+                    case "$path" in
+                      CHANGELOG.md|package.json|package-lock.json)
+                        ;;
+                      *)
+                        echo "Unexpected staged release path: $path" >&2
+                        exit 1
+                        ;;
+                    esac
+                  done
                   if git diff --cached --quiet; then
                     echo "No staged changes found for release commit." >&2
                     exit 1
                   fi
 
-                  git commit -m "chore: release ${TAG}"
+                  git commit -m "🔖 [chore] Release ${TAG}"
+                  if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+                    echo "Release commit left unexpected worktree changes." >&2
+                    git status --short
+                    exit 1
+                  fi
                   git tag -a "$TAG" -m "$TAG"
                   git push origin "HEAD:${BRANCH}"
                   git push origin "$TAG"
 
             - name: "Generate release notes from git-cliff"
+              id: "release_notes"
               env:
                   EXPECTED_TAG: "${{ steps.version.outputs.tag }}"
                   GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -319,75 +434,32 @@ jobs:
                     exit 1
                   fi
 
-                  mkdir -p temp
-                  npm run --silent changelog:release-notes -- --output "${RELEASE_NOTES_PATH}"
-                  if [ ! -s "${RELEASE_NOTES_PATH}" ]; then
-                    echo "No release notes were generated by git-cliff." > "${RELEASE_NOTES_PATH}"
+                  release_notes_path="${RUNNER_TEMP}/release-notes.md"
+                  npm run --silent changelog:release-notes > "$release_notes_path"
+                  if [ ! -s "$release_notes_path" ]; then
+                    echo "No release notes were generated by git-cliff." > "$release_notes_path"
                   fi
-
-            - name: "Build package for publish"
-              run: "npm run build:runtime"
+                  echo "path=$release_notes_path" >> "$GITHUB_OUTPUT"
 
             - name: "Publish to npm"
               if: "steps.npm_check.outputs.already_published != 'true'"
-              run: "npm publish --access public --provenance --ignore-scripts"
-
-            - name: "Create release archives"
-              id: "release_assets"
               env:
-                  PACKAGE_NAME: "${{ steps.version.outputs.package_name }}"
-                  VERSION: "${{ steps.version.outputs.version }}"
-              run: |
-                  set -euo pipefail
-
-                  assets_dir="${RELEASE_ASSETS_DIR}"
-                  unpack_dir="temp/release-package"
-                  pack_metadata_path="${assets_dir}/npm-pack.json"
-                  mkdir -p "$assets_dir"
-                  rm -rf "$unpack_dir"
-
-                  npm pack --json --pack-destination "$assets_dir" > "$pack_metadata_path"
-
-                  tarball_filename=$(
-                    node -e "
-                      const fs = require('node:fs');
-                      const packMetadata = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
-                      process.stdout.write(packMetadata[0].filename);
-                    " "$pack_metadata_path"
-                  )
-                  tarball_path="${assets_dir}/${tarball_filename}"
-                  safe_package_name=$(printf '%s' "$PACKAGE_NAME" | sed 's/^@//; s#/#-#g')
-                  zip_basename="${safe_package_name}-${VERSION}"
-
-                  mkdir -p "$unpack_dir"
-                  tar -xzf "$tarball_path" -C "$unpack_dir"
-                  mv "$unpack_dir/package" "$unpack_dir/${zip_basename}"
-
-                  (
-                    cd "$unpack_dir"
-                    zip -rq "../release-assets/${zip_basename}.zip" "${zip_basename}"
-                  )
-
-                  {
-                    echo "tarball_path=$tarball_path"
-                    echo "zip_path=${assets_dir}/${zip_basename}.zip"
-                    echo "tarball_name=$tarball_filename"
-                    echo "zip_name=${zip_basename}.zip"
-                  } >> "$GITHUB_OUTPUT"
+                  TARBALL_PATH: "${{ steps.release_assets.outputs.tarball_path }}"
+              run: 'npm publish "${TARBALL_PATH}" --access public --provenance --ignore-scripts'
 
             - name: "Create GitHub release"
               uses: "softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b" # v3.0.1
               with:
                   tag_name: "${{ steps.version.outputs.tag }}"
                   name: "${{ steps.version.outputs.tag }}"
-                  body_path: "${{ env.RELEASE_NOTES_PATH }}"
+                  body_path: "${{ steps.release_notes.outputs.path }}"
                   draft: false
                   files: |
                       ${{ steps.release_assets.outputs.tarball_path }}
                       ${{ steps.release_assets.outputs.zip_path }}
                   fail_on_unmatched_files: true
                   generate_release_notes: false
-                  overwrite_files: true
+                  overwrite_files: false
                   prerelease: false
               env:
                   GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
