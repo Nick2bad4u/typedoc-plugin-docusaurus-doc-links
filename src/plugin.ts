@@ -7,12 +7,19 @@ import {
 
 import { prefixBareMarkdownFileLinksInMarkdown } from "./core.js";
 
+const loadedApplications = new WeakSet<Readonly<Application>>();
+
 /**
  * TypeDoc plugin entrypoint.
  *
  * @param app - TypeDoc app instance.
  */
 export function load(app: Readonly<Application>): void {
+    if (loadedApplications.has(app)) {
+        return;
+    }
+
+    loadedApplications.add(app);
     app.renderer.on(PageEvent.END, onPageEnd);
 }
 
