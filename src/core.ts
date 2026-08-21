@@ -300,7 +300,7 @@ function splitAngleWrappedDestination(
         }
     }
 
-    return { destination: core, remainder: "" };
+    return { destination: "", remainder: core };
 }
 
 function splitBareDestination(core: string): InlineLinkDestinationParts {

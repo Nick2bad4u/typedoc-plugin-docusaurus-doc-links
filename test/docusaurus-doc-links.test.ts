@@ -38,11 +38,15 @@ describe("typedoc-plugin-docusaurus-doc-links", () => {
                     "[Query](api/index.md?x=1#section)",
                     String.raw`[Escaped\](api/index.md)`,
                     "`[Code](api/index.md)`",
-                    "```",
+                    "````ts",
                     "[Fenced](api/index.md)",
-                    "```not-a-closing-fence",
-                    "[Still fenced](api/index.md)",
                     "```",
+                    "[Still fenced after short closer](api/index.md)",
+                    "~~~~",
+                    "[Still fenced after other marker](api/index.md)",
+                    "````not-a-closing-fence",
+                    "[Still fenced](api/index.md)",
+                    "````",
                     "[After fence](after.md)",
                 ].join("\n")
             )
@@ -57,12 +61,44 @@ describe("typedoc-plugin-docusaurus-doc-links", () => {
                 "[Query](./api/index.md?x=1#section)",
                 String.raw`[Escaped\](api/index.md)`,
                 "`[Code](api/index.md)`",
-                "```",
+                "````ts",
                 "[Fenced](api/index.md)",
-                "```not-a-closing-fence",
-                "[Still fenced](api/index.md)",
                 "```",
+                "[Still fenced after short closer](api/index.md)",
+                "~~~~",
+                "[Still fenced after other marker](api/index.md)",
+                "````not-a-closing-fence",
+                "[Still fenced](api/index.md)",
+                "````",
                 "[After fence](./after.md)",
+            ].join("\n")
+        );
+    });
+
+    it("handles malformed and nested inline destinations conservatively", () => {
+        expect.assertions(1);
+
+        expect(
+            prefixBareMarkdownFileLinksInMarkdown(
+                [
+                    "not](target.md)",
+                    "[Unclosed](target.md",
+                    "[]()",
+                    "[Nested](folder/(draft).md)",
+                    String.raw`[Escaped destination](folder\ name.md)`,
+                    String.raw`[Angle escape](<folder\>name.md> "Title")`,
+                    "[Unclosed angle](<target.md)",
+                ].join("\n")
+            )
+        ).toBe(
+            [
+                "not](target.md)",
+                "[Unclosed](target.md",
+                "[]()",
+                "[Nested](./folder/(draft).md)",
+                String.raw`[Escaped destination](./folder\ name.md)`,
+                String.raw`[Angle escape](<./folder\>name.md> "Title")`,
+                "[Unclosed angle](<target.md)",
             ].join("\n")
         );
     });

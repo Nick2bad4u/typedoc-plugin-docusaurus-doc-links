@@ -26,7 +26,7 @@ describe("public API types", () => {
     });
 
     it("registers the renderer hook once per application", async () => {
-        expect.assertions(3);
+        expect.assertions(5);
 
         const firstApp = await Application.bootstrap();
         const firstOn = vi.spyOn(firstApp.renderer, "on");
@@ -38,6 +38,13 @@ describe("public API types", () => {
             url: "index.md",
         } as PageEvent;
         firstApp.renderer.trigger(PageEvent.END, page);
+        const contentlessPage = { url: "index.md" } as PageEvent;
+        firstApp.renderer.trigger(PageEvent.END, contentlessPage);
+        const htmlPage = {
+            contents: "[Target](target.md)",
+            url: "index.html",
+        } as PageEvent;
+        firstApp.renderer.trigger(PageEvent.END, htmlPage);
 
         const secondApp = await Application.bootstrap();
         const secondOn = vi.spyOn(secondApp.renderer, "on");
@@ -52,5 +59,7 @@ describe("public API types", () => {
             expect.any(Function)
         );
         expect(page.contents).toBe("[Target](./target.md)");
+        expect(contentlessPage.contents).toBeUndefined();
+        expect(htmlPage.contents).toBe("[Target](target.md)");
     });
 });
