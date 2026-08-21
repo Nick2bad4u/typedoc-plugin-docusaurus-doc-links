@@ -94,6 +94,7 @@
         "sync:node-version-files": "node scripts/sync-node-version-files.mjs",
         "sync:peer-typedoc-range": "node scripts/sync-peer-typedoc-range.mjs",
         "test": "npm run build && vitest run",
+        "test:ci": "vitest run --coverage --reporter=github-actions --reporter=dot --reporter=junit --outputFile=test-report.junit.xml --silent",
         "typecheck": "tsc -p tsconfig.json --noEmit && npm run docs:typecheck",
         "types:update": "npx --yes --ignore-scripts typesync",
         "update-actions": "npx --yes --ignore-scripts actions-up --yes --style sha",
