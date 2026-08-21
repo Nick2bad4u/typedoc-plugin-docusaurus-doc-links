@@ -227,7 +227,7 @@ jobs:
               if: "github.event_name == 'workflow_dispatch'"
               run: "npm run build"
 
-            - name: "Refresh changelog after manual version bump"
+            - name: "Refresh and format changelog after manual version bump"
               if: "github.event_name == 'workflow_dispatch'"
               run: "npm run changelog:generate"
 

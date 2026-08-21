@@ -54,7 +54,8 @@
     "scripts": {
         "build": "npm run clean:dist && tsc -p tsconfig.build.json",
         "build:runtime": "npm run build",
-        "changelog:generate": "git cliff --config node_modules/gitcliff-config-nick2bad4u/cliff.toml --github-repo Nick2bad4u/typedoc-plugin-docusaurus-doc-links --output CHANGELOG.md",
+        "changelog:format": "prettier CHANGELOG.md --log-level warn --write",
+        "changelog:generate": "git cliff --config node_modules/gitcliff-config-nick2bad4u/cliff.toml --github-repo Nick2bad4u/typedoc-plugin-docusaurus-doc-links --output CHANGELOG.md && npm run changelog:format",
         "changelog:preview": "git cliff --config node_modules/gitcliff-config-nick2bad4u/cliff.toml --github-repo Nick2bad4u/typedoc-plugin-docusaurus-doc-links --unreleased",
         "changelog:release-notes": "git cliff --config node_modules/gitcliff-config-nick2bad4u/cliff.toml --github-repo Nick2bad4u/typedoc-plugin-docusaurus-doc-links --current",
         "check:package-manager": "node scripts/check-package-manager.mjs",
